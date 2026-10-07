@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRIDO - Advanced Canvas & HTML Color Studio</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f4ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #090d16;
+            color: #f1f5f9;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Color Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: #1e293b;
+            height: 8px;
+            border-radius: 4px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #818cf8;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(129, 140, 248, 0.5);
+            border: 2px solid #ffffff;
+        }
+
+        /* Glowing text effects */
+        .glow-text {
+            text-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+        }
+
+        /* Canvas pattern background */
+        .checkerboard {
+            background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%), 
+                              linear-gradient(-45deg, #1e293b 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #1e293b 75%), 
+                              linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800/80 px-4 lg:px-8 py-3 transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-lg shadow-indigo-500/30">
+                        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                            <i class="fa-solid font-black text-transparent bg-clip-text bg-gradient-to-tr from-indigo-400 to-pink-400 text-xl fa-palette"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-2xl font-black tracking-wider text-white glow-text">PRIDO</h1>
+                            <span class="px-2 py-0.5 text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full">v2.5 PRO</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Canvas & HTML Color Manipulation Suite</p>
+                    </div>
+                </div>
+
+                <!-- Founder Badge Badge (Mobile/Tablet) -->
+                <div class="md:hidden flex items-center gap-1.5 text-xs text-slate-300 bg-slate-800/60 px-2.5 py-1 rounded-full border border-slate-700/50">
+                    <i class="fa-solid fa-code text-indigo-400 text-[10px]"></i>
+                    <span>Pritam K. Mandal</span>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex items-center gap-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800 w-full md:w-auto overflow-x-auto text-xs sm:text-sm">
+                <button onclick="switchTab('image-studio')" id="tab-image-studio" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-300 hover:text-white transition flex items-center gap-2 whitespace-nowrap active-tab bg-indigo-600 text-white shadow-md">
+                    <i class="fa-solid fa-image text-xs"></i> Image Recolor
+                </button>
+                <button onclick="switchTab('generative-studio')" id="tab-generative-studio" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Generative Mesh
+                </button>
+                <button onclick="switchTab('paint-studio')" id="tab-paint-studio" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-paint-brush text-xs"></i> Dynamic Paint
+                </button>
+                <button onclick="switchTab('gradient-studio')" id="tab-gradient-studio" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-border-all text-xs"></i> Gradient Studio
+                </button>
+                <button onclick="switchTab('harmony-studio')" id="tab-harmony-studio" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-swatchbook text-xs"></i> Color WCAG
+                </button>
+            </nav>
+
+            <!-- Founder Attribution Tag (Desktop) -->
+            <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-indigo-500/20 text-xs text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Founded by <strong class="text-indigo-300 font-semibold">Pritam Kumar Mandal</strong></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto w-full px-4 lg:px-8 py-6 flex-grow">
+
+        <!-- TAB 1: IMAGE RECOLOR & FILTER CANVAS -->
+        <section id="sec-image-studio" class="tab-content block space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Controls Column -->
+                <div class="lg:col-span-4 space-y-5">
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-sliders text-indigo-400"></i> Canvas Filter Controls
+                            </h2>
+                            <button onclick="resetImageFilters()" class="text-xs text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-left"></i> Reset
+                            </button>
+                        </div>
+
+                        <!-- Image Source Controls -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Upload or Sample Image</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-xl cursor-pointer transition border border-slate-700 text-slate-200">
+                                    <i class="fa-solid fa-cloud-arrow-up text-indigo-400"></i> Upload Local
+                                    <input type="file" id="imageUploader" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                                </label>
+                                <button onclick="loadSampleImage()" class="flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-xl transition border border-slate-700 text-slate-200">
+                                    <i class="fa-solid fa-arrows-rotate text-purple-400"></i> Sample Image
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr class="border-slate-800">
+
+                        <!-- Color Adjustment Sliders -->
+                        <div class="space-y-3.5">
+                            <!-- Hue Shift -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Hue Rotation (Canvas HSL)</span>
+                                    <span id="val-hue" class="text-indigo-400 font-mono">0°</span>
+                                </div>
+                                <input type="range" id="filter-hue" min="0" max="360" value="0" class="w-full" oninput="applyImageFilters()">
+                            </div>
+
+                            <!-- Saturation -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Saturation Intensity</span>
+                                    <span id="val-saturate" class="text-indigo-400 font-mono">100%</span>
+                                </div>
+                                <input type="range" id="filter-saturate" min="0" max="300" value="100" class="w-full" oninput="applyImageFilters()">
+                            </div>
+
+                            <!-- Brightness -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Canvas Brightness</span>
+                                    <span id="val-brightness" class="text-indigo-400 font-mono">100%</span>
+                                </div>
+                                <input type="range" id="filter-brightness" min="0" max="200" value="100" class="w-full" oninput="applyImageFilters()">
+                            </div>
+
+                            <!-- Contrast -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Contrast Ratio</span>
+                                    <span id="val-contrast" class="text-indigo-400 font-mono">100%</span>
+                                </div>
+                                <input type="range" id="filter-contrast" min="0" max="250" value="100" class="w-full" oninput="applyImageFilters()">
+                            </div>
+
+                            <!-- Color Tint Overlay -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Canvas Color Tint Mask</span>
+                                    <span id="val-tint-opacity" class="text-indigo-400 font-mono">0%</span>
+                                </div>
+                                <div class="flex gap-2 items-center">
+                                    <input type="color" id="filter-tint-color" value="#6366f1" class="w-10 h-8 rounded-lg cursor-pointer bg-transparent border border-slate-700" oninput="applyImageFilters()">
+                                    <input type="range" id="filter-tint-opacity" min="0" max="100" value="0" class="w-full" oninput="applyImageFilters()">
+                                </div>
+                            </div>
+
+                            <!-- Sepia & Invert -->
+                            <div class="grid grid-cols-2 gap-3 pt-1">
+                                <div>
+                                    <label class="text-xs text-slate-300 block mb-1">Sepia Tone</label>
+                                    <input type="range" id="filter-sepia" min="0" max="100" value="0" class="w-full" oninput="applyImageFilters()">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-slate-300 block mb-1">Invert Colors</label>
+                                    <input type="range" id="filter-invert" min="0" max="100" value="0" class="w-full" oninput="applyImageFilters()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Export Options -->
+                        <div class="pt-2 flex gap-2">
+                            <button onclick="downloadCanvas('img-recolor-canvas', 'prido-recolored.png')" class="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium text-xs rounded-xl shadow-lg shadow-indigo-600/25 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-download"></i> Save Canvas Image
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas Preview Column -->
+                <div class="lg:col-span-8 flex flex-col space-y-4">
+                    <div class="glass-panel p-4 rounded-2xl flex-grow flex flex-col justify-between min-h-[420px]">
+                        <div class="flex items-center justify-between mb-3 text-xs text-slate-400">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-desktop text-indigo-400"></i> Interactive Canvas Surface</span>
+                            <span id="canvas-dim-info" class="font-mono text-slate-500">800 x 500 px</span>
+                        </div>
+
+                        <!-- Canvas Viewport -->
+                        <div class="relative w-full flex-grow flex items-center justify-center checkerboard rounded-xl overflow-hidden border border-slate-800 p-2 min-h-[350px]">
+                            <canvas id="img-recolor-canvas" class="max-w-full max-h-[500px] object-contain rounded-lg shadow-2xl cursor-crosshair"></canvas>
+                        </div>
+
+                        <!-- Bottom HTML Color Inspector Bar -->
+                        <div class="mt-4 p-3 bg-slate-900/90 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+                            <div class="flex items-center gap-3">
+                                <div id="pixel-color-swatch" class="w-7 h-7 rounded-lg border border-white/20 shadow-inner" style="background-color: #6366f1;"></div>
+                                <div>
+                                    <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Hover Pixel HTML Color</div>
+                                    <div id="pixel-color-hex" class="font-mono text-slate-200 font-bold">HEX: #6366F1</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span id="pixel-color-rgb" class="font-mono bg-slate-800 px-2.5 py-1 rounded-md text-slate-300">rgb(99, 102, 241)</span>
+                                <button onclick="copyCurrentPixelColor()" class="px-2.5 py-1 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 rounded-md border border-indigo-500/30 transition">
+                                    <i class="fa-regular fa-copy"></i> Copy Color
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: GENERATIVE COLOR MESH CANVAS -->
+        <section id="sec-generative-studio" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Controls -->
+                <div class="lg:col-span-4 space-y-5">
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-atom text-purple-400"></i> Generative Fluid Engine
+                            </h2>
+                            <button onclick="randomizeGenerativeColors()" class="text-xs text-purple-400 hover:text-purple-300 transition flex items-center gap-1">
+                                <i class="fa-solid fa-shuffle"></i> Randomize
+                            </button>
+                        </div>
+
+                        <!-- Preset Palette Selector -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Color Preset Themes</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="setGenerativeTheme('cyberpunk')" class="px-3 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-xl text-xs font-medium border border-pink-500/30 text-pink-300 flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-gradient-to-r from-pink-500 to-cyan-400"></span> Cyberpunk
+                                </button>
+                                <button onclick="setGenerativeTheme('aurora')" class="px-3 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-xl text-xs font-medium border border-emerald-500/30 text-emerald-300 flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-400 to-indigo-500"></span> Aurora B.
+                                </button>
+                                <button onclick="setGenerativeTheme('sunset')" class="px-3 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-xl text-xs font-medium border border-amber-500/30 text-amber-300 flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-gradient-to-r from-amber-500 to-rose-500"></span> Neon Sunset
+                                </button>
+                                <button onclick="setGenerativeTheme('ocean')" class="px-3 py-2 bg-slate-800/80 hover:bg-slate-700 rounded-xl text-xs font-medium border border-blue-500/30 text-blue-300 flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-gradient-to-r from-blue-600 to-teal-400"></span> Deep Blue
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr class="border-slate-800">
+
+                        <!-- Canvas Particle Parameters -->
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Flow Speed</span>
+                                    <span id="val-gen-speed" class="text-purple-400 font-mono">1.5x</span>
+                                </div>
+                                <input type="range" id="gen-speed" min="0.2" max="4.0" step="0.1" value="1.5" class="w-full">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Color Node Count</span>
+                                    <span id="val-gen-count" class="text-purple-400 font-mono">12</span>
+                                </div>
+                                <input type="range" id="gen-count" min="4" max="30" value="12" class="w-full" onchange="initGenerativeCanvas()">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Blur & Diffusion Radius</span>
+                                    <span id="val-gen-blur" class="text-purple-400 font-mono">40px</span>
+                                </div>
+                                <input type="range" id="gen-blur" min="0" max="80" value="40" class="w-full">
+                            </div>
+
+                            <!-- Individual Color Channels -->
+                            <div class="space-y-2">
+                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Base Color Palettes</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="gen-c1" value="#ff2d55" class="w-10 h-9 rounded-lg bg-transparent border border-slate-700 cursor-pointer">
+                                    <input type="color" id="gen-c2" value="#5856d6" class="w-10 h-9 rounded-lg bg-transparent border border-slate-700 cursor-pointer">
+                                    <input type="color" id="gen-c3" value="#007aff" class="w-10 h-9 rounded-lg bg-transparent border border-slate-700 cursor-pointer">
+                                    <input type="color" id="gen-c4" value="#5ac8fa" class="w-10 h-9 rounded-lg bg-transparent border border-slate-700 cursor-pointer">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="pt-2 flex gap-2">
+                            <button onclick="downloadCanvas('generative-canvas', 'prido-generative-art.png')" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-medium text-xs rounded-xl shadow-lg shadow-purple-600/25 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-download"></i> Export Generative Art
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generative Display -->
+                <div class="lg:col-span-8 flex flex-col">
+                    <div class="glass-panel p-4 rounded-2xl flex-grow flex flex-col justify-between min-h-[480px]">
+                        <div class="flex items-center justify-between mb-3 text-xs text-slate-400">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-play text-purple-400 animate-pulse"></i> Real-time Color Fluid Canvas</span>
+                            <span class="text-xs text-slate-500">Move cursor to interact with color vectors</span>
+                        </div>
+
+                        <div class="relative w-full flex-grow rounded-xl overflow-hidden border border-slate-800 min-h-[400px]">
+                            <canvas id="generative-canvas" class="w-full h-full block cursor-pointer"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: DYNAMIC PAINT PLAYGROUND CANVAS -->
+        <section id="sec-paint-studio" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Paint Controls -->
+                <div class="lg:col-span-4 space-y-5">
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-paintbrush text-pink-400"></i> Canvas Brush Studio
+                            </h2>
+                            <button onclick="clearPaintCanvas()" class="text-xs text-rose-400 hover:text-rose-300 transition flex items-center gap-1">
+                                <i class="fa-solid fa-trash-can"></i> Clear All
+                            </button>
+                        </div>
+
+                        <!-- Brush Options -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Brush Effect Mode</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="setBrushMode('solid')" id="btn-brush-solid" class="brush-mode-btn px-3 py-2 bg-indigo-600 text-white rounded-xl text-xs font-medium transition border border-indigo-500 flex items-center gap-2">
+                                        <i class="fa-solid fa-pen"></i> Solid Color
+                                    </button>
+                                    <button onclick="setBrushMode('rainbow')" id="btn-brush-rainbow" class="brush-mode-btn px-3 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl text-xs font-medium transition border border-slate-700 flex items-center gap-2">
+                                        <i class="fa-solid fa-rainbow text-pink-400"></i> Neon Rainbow
+                                    </button>
+                                    <button onclick="setBrushMode('glow')" id="btn-brush-glow" class="brush-mode-btn px-3 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl text-xs font-medium transition border border-slate-700 flex items-center gap-2">
+                                        <i class="fa-solid fa-sun text-amber-400"></i> Glowing Neon
+                                    </button>
+                                    <button onclick="setBrushMode('eraser')" id="btn-brush-eraser" class="brush-mode-btn px-3 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl text-xs font-medium transition border border-slate-700 flex items-center gap-2">
+                                        <i class="fa-solid fa-eraser text-slate-400"></i> Eraser
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Color Pickers -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Primary Paint Color</label>
+                                <div class="flex items-center gap-3">
+                                    <input type="color" id="paint-color" value="#ec4899" class="w-12 h-10 rounded-xl bg-transparent border border-slate-700 cursor-pointer">
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <button onclick="setPaintColor('#f43f5e')" class="w-7 h-7 rounded-lg bg-rose-500 border border-white/20"></button>
+                                        <button onclick="setPaintColor('#ec4899')" class="w-7 h-7 rounded-lg bg-pink-500 border border-white/20"></button>
+                                        <button onclick="setPaintColor('#a855f7')" class="w-7 h-7 rounded-lg bg-purple-500 border border-white/20"></button>
+                                        <button onclick="setPaintColor('#3b82f6')" class="w-7 h-7 rounded-lg bg-blue-500 border border-white/20"></button>
+                                        <button onclick="setPaintColor('#10b981')" class="w-7 h-7 rounded-lg bg-emerald-500 border border-white/20"></button>
+                                        <button onclick="setPaintColor('#eab308')" class="w-7 h-7 rounded-lg bg-yellow-500 border border-white/20"></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Brush Size -->
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Brush Size</span>
+                                    <span id="val-brush-size" class="text-pink-400 font-mono">12px</span>
+                                </div>
+                                <input type="range" id="brush-size" min="1" max="80" value="12" class="w-full">
+                            </div>
+
+                            <!-- Background Fill -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Canvas Canvas Fill</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="paint-bg-color" value="#0f172a" class="w-10 h-8 rounded-lg bg-transparent border border-slate-700 cursor-pointer">
+                                    <button onclick="fillPaintBackground()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg border border-slate-700">
+                                        Fill Canvas
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Download Paint -->
+                        <div class="pt-2 flex gap-2">
+                            <button onclick="downloadCanvas('paint-canvas', 'prido-artwork.png')" class="w-full py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-medium text-xs rounded-xl shadow-lg shadow-pink-600/25 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-download"></i> Save Painting
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paint Surface -->
+                <div class="lg:col-span-8 flex flex-col">
+                    <div class="glass-panel p-4 rounded-2xl flex-grow flex flex-col justify-between min-h-[480px]">
+                        <div class="flex items-center justify-between mb-3 text-xs text-slate-400">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-hand-pointer text-pink-400"></i> Interactive Canvas Paintboard</span>
+                            <span class="text-xs text-slate-500">Touch or Click + Drag to Paint</span>
+                        </div>
+
+                        <div class="relative w-full flex-grow rounded-xl overflow-hidden border border-slate-800 bg-slate-900 min-h-[400px]">
+                            <canvas id="paint-canvas" class="w-full h-full block cursor-crosshair"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: GRADIENT CANVAS & HTML CODE EXPORTER -->
+        <section id="sec-gradient-studio" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Gradient Controls -->
+                <div class="lg:col-span-4 space-y-5">
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-palette text-cyan-400"></i> Gradient Canvas Studio
+                            </h2>
+                            <button onclick="randomizeGradient()" class="text-xs text-cyan-400 hover:text-cyan-300 transition flex items-center gap-1">
+                                <i class="fa-solid fa-shuffle"></i> Randomize
+                            </button>
+                        </div>
+
+                        <!-- Gradient Type -->
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Gradient Style</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="setGradientType('linear')" id="btn-grad-linear" class="grad-type-btn px-3 py-2 bg-indigo-600 text-white rounded-xl text-xs font-medium transition border border-indigo-500">
+                                        Linear
+                                    </button>
+                                    <button onclick="setGradientType('radial')" id="btn-grad-radial" class="grad-type-btn px-3 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl text-xs font-medium transition border border-slate-700">
+                                        Radial
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Angle Slider (Linear) -->
+                            <div id="grad-angle-container">
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Angle (Degrees)</span>
+                                    <span id="val-grad-angle" class="text-cyan-400 font-mono">135°</span>
+                                </div>
+                                <input type="range" id="grad-angle" min="0" max="360" value="135" class="w-full" oninput="updateGradient()">
+                            </div>
+
+                            <!-- Color Stops -->
+                            <div class="space-y-2">
+                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Gradient Stops</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="grad-color-1" value="#06b6d4" class="w-10 h-9 rounded-lg bg-transparent border border-slate-700 cursor-pointer" oninput="updateGradient()">
+                                    <input type="range" id="grad-stop-1" min="0" max="100" value="0" class="w-full" oninput="updateGradient()">
+                                    <span id="val-stop-1" class="text-xs font-mono text-slate-400 w-8">0%</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="grad-color-2" value="#3b82f6" class="w-10 h-9 rounded-lg bg-transparent border border-slate-700 cursor-pointer" oninput="updateGradient()">
+                                    <input type="range" id="grad-stop-2" min="0" max="100" value="50" class="w-full" oninput="updateGradient()">
+                                    <span id="val-stop-2" class="text-xs font-mono text-slate-400 w-8">50%</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="grad-color-3" value="#8b5cf6" class="w-10 h-9 rounded-lg bg-transparent border border-slate-700 cursor-pointer" oninput="updateGradient()">
+                                    <input type="range" id="grad-stop-3" min="0" max="100" value="100" class="w-full" oninput="updateGradient()">
+                                    <span id="val-stop-3" class="text-xs font-mono text-slate-400 w-8">100%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Generated Code Box -->
+                        <div class="space-y-2 pt-2">
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Exported CSS Code</label>
+                            <div class="relative">
+                                <textarea id="grad-css-output" readonly class="w-full h-24 bg-slate-950 p-3 rounded-xl font-mono text-xs text-cyan-300 border border-slate-800 resize-none focus:outline-none"></textarea>
+                                <button onclick="copyGradientCSS()" class="absolute top-2 right-2 px-2.5 py-1 bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-200 text-xs rounded-md border border-cyan-500/30 transition">
+                                    <i class="fa-regular fa-copy"></i> Copy CSS
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gradient Display -->
+                <div class="lg:col-span-8 flex flex-col">
+                    <div class="glass-panel p-4 rounded-2xl flex-grow flex flex-col justify-between min-h-[480px]">
+                        <div class="flex items-center justify-between mb-3 text-xs text-slate-400">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-display text-cyan-400"></i> HTML Canvas Render</span>
+                            <span class="text-xs text-slate-500">Smooth Multi-Stop Gradient</span>
+                        </div>
+
+                        <div class="relative w-full flex-grow rounded-xl overflow-hidden border border-slate-800 min-h-[400px]">
+                            <canvas id="gradient-canvas" class="w-full h-full block"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: COLOR HARMONY & WCAG CONTRAST INSPECTOR -->
+        <section id="sec-harmony-studio" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Color Input Side -->
+                <div class="lg:col-span-5 space-y-5">
+                    <div class="glass-panel p-5 rounded-2xl space-y-5">
+                        <div class="border-b border-slate-800 pb-3">
+                            <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-eyedropper text-emerald-400"></i> Base Color Selector
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-0.5">Explore dynamic HTML color harmonies & WCAG ratios</p>
+                        </div>
+
+                        <!-- Picker Input -->
+                        <div class="flex items-center gap-4">
+                            <input type="color" id="base-harmony-color" value="#6366f1" class="w-16 h-16 rounded-2xl bg-transparent border-2 border-slate-700 cursor-pointer" oninput="calculateHarmonies()">
+                            <div class="flex-grow space-y-1">
+                                <label class="text-xs text-slate-400 font-semibold uppercase tracking-wider block">HEX Color Code</label>
+                                <input type="text" id="base-harmony-hex" value="#6366F1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 font-mono text-sm text-slate-100 focus:outline-none focus:border-indigo-500" onchange="updateBaseColorFromHex(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- WCAG Accessibility Tester Panel -->
+                        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
+                            <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-universal-access text-emerald-400"></i> WCAG 2.1 Contrast Score
+                            </h3>
+                            
+                            <!-- Test Surface Preview -->
+                            <div id="wcag-preview-box" class="p-4 rounded-lg text-center transition-all duration-200" style="background-color: #6366f1; color: #ffffff;">
+                                <p class="text-sm font-bold">Sample Display Text</p>
+                                <p class="text-xs opacity-90">Readable foreground contrast preview</p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 flex items-center justify-between">
+                                    <span class="text-slate-400">Vs White (#FFF)</span>
+                                    <span id="wcag-white-ratio" class="font-mono font-bold text-emerald-400">4.5:1</span>
+                                </div>
+                                <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 flex items-center justify-between">
+                                    <span class="text-slate-400">Vs Dark (#090D16)</span>
+                                    <span id="wcag-dark-ratio" class="font-mono font-bold text-emerald-400">9.2:1</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Harmonies Cards Side -->
+                <div class="lg:col-span-7 space-y-5">
+                    <!-- Analogous -->
+                    <div class="glass-panel p-5 rounded-2xl space-y-3">
+                        <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Analogous Colors
+                        </h3>
+                        <div id="palette-analogous" class="grid grid-cols-3 sm:grid-cols-5 gap-2"></div>
+                    </div>
+
+                    <!-- Complementary -->
+                    <div class="glass-panel p-5 rounded-2xl space-y-3">
+                        <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-pink-500"></span> Complementary & Split Colors
+                        </h3>
+                        <div id="palette-complementary" class="grid grid-cols-3 sm:grid-cols-5 gap-2"></div>
+                    </div>
+
+                    <!-- Triadic -->
+                    <div class="glass-panel p-5 rounded-2xl space-y-3">
+                        <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Triadic Color Scheme
+                        </h3>
+                        <div id="palette-triadic" class="grid grid-cols-3 sm:grid-cols-5 gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-panel border-t border-slate-800/80 py-6 px-4 lg:px-8 mt-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+            <div class="flex items-center gap-3">
+                <div class="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">P</div>
+                <span><strong>PRIDO</strong> Canvas & Color Engine &copy; 2026. All rights reserved.</span>
+            </div>
+
+            <div class="flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-full border border-slate-800">
+                <i class="fa-solid fa-crown text-amber-400"></i>
+                <span>Designed & Founded by <strong class="text-slate-200">Pritam Kumar Mandal</strong></span>
+            </div>
+
+            <div class="flex items-center gap-4 text-slate-400">
+                <span class="hover:text-slate-200 cursor-pointer"><i class="fa-solid fa-bolt text-indigo-400 mr-1"></i> HTML5 Canvas</span>
+                <span class="hover:text-slate-200 cursor-pointer"><i class="fa-solid fa-code text-pink-400 mr-1"></i> HSL / RGB Engine</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 border border-indigo-500/40 text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toast-msg" class="text-xs font-medium">Color code copied to clipboard!</span>
+    </div>
+
+    <script>
+        /* Global Application State */
+        const state = {
+            activeTab: 'image-studio',
+            sampleImages: [
+                'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80'
+            ],
+            sampleIdx: 0,
+            activeImage: new Image(),
+            pixelColor: '#6366f1',
+            generative: {
+                nodes: [],
+                animId: null,
+                speed: 1.5,
+                count: 12,
+                blur: 40,
+                colors: ['#ff2d55', '#5856d6', '#007aff', '#5ac8fa']
+            },
+            paint: {
+                isDrawing: false,
+                lastX: 0,
+                lastY: 0,
+                mode: 'solid',
+                color: '#ec4899',
+                size: 12,
+                rainbowHue: 0
+            },
+            gradient: {
+                type: 'linear',
+                angle: 135,
+                stops: [
+                    { color: '#06b6d4', pos: 0 },
+                    { color: '#3b82f6', pos: 50 },
+                    { color: '#8b5cf6', pos: 100 }
+                ]
+            }
+        };
+
+        /* Window Initialization */
+        window.onload = function() {
+            initImageStudio();
+            initGenerativeCanvas();
+            initPaintCanvas();
+            updateGradient();
+            calculateHarmonies();
+            window.addEventListener('resize', handleResize);
+        };
+
+        /* Tab Switcher */
+        function switchTab(tabId) {
+            state.activeTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                btn.classList.add('text-slate-400');
+            });
+
+            document.getElementById(`sec-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+            activeBtn.classList.remove('text-slate-400');
+
+            if (tabId === 'paint-studio') resizePaintCanvas();
+            if (tabId === 'generative-studio') resizeGenerativeCanvas();
+            if (tabId === 'gradient-studio') updateGradient();
+        }
+
+        /* Toast Utility */
+        function showToast(message, icon = 'fa-circle-check') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+            
+            toastMsg.textContent = message;
+            toastIcon.className = `fa-solid ${icon} text-emerald-400 text-lg`;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        /* Clipboard Helper */
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast(`Copied to clipboard: ${text}`);
+        }
+
+        /* --- TAB 1: IMAGE RECOLOR ENGINE --- */
+        function initImageStudio() {
+            const canvas = document.getElementById('img-recolor-canvas');
+            const ctx = canvas.getContext('2d');
+
+            state.activeImage.crossOrigin = 'anonymous';
+            state.activeImage.onload = () => {
+                canvas.width = state.activeImage.width || 800;
+                canvas.height = state.activeImage.height || 500;
+                document.getElementById('canvas-dim-info').textContent = `${canvas.width} x ${canvas.height} px`;
+                applyImageFilters();
+            };
+            
+            // Initial Sample Load
+            state.activeImage.src = state.sampleImages[0];
+
+            // Canvas Eyedropper Pixel Hover
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = Math.floor((e.clientX - rect.left) * scaleX);
+                const y = Math.floor((e.clientY - rect.top) * scaleY);
+
+                try {
+                    const pixel = ctx.getImageData(x, y, 1, 1).data;
+                    const hex = `#${((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2]).toString(16).slice(1).toUpperCase()}`;
+                    state.pixelColor = hex;
+                    document.getElementById('pixel-color-swatch').style.backgroundColor = hex;
+                    document.getElementById('pixel-color-hex').textContent = `HEX: ${hex}`;
+                    document.getElementById('pixel-color-rgb').textContent = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+                } catch(err) {
+                    // Ignore CORS fallback pixel sampling errors
+                }
+            });
+        }
+
+        function loadSampleImage() {
+            state.sampleIdx = (state.sampleIdx + 1) % state.sampleImages.length;
+            state.activeImage.src = state.sampleImages[state.sampleIdx];
+        }
+
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    state.activeImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function applyImageFilters() {
+            const canvas = document.getElementById('img-recolor-canvas');
+            const ctx = canvas.getContext('2d');
+            if (!canvas.width) return;
+
+            const hue = document.getElementById('filter-hue').value;
+            const saturate = document.getElementById('filter-saturate').value;
+            const brightness = document.getElementById('filter-brightness').value;
+            const contrast = document.getElementById('filter-contrast').value;
+            const sepia = document.getElementById('filter-sepia').value;
+            const invert = document.getElementById('filter-invert').value;
+            const tintColor = document.getElementById('filter-tint-color').value;
+            const tintOpacity = document.getElementById('filter-tint-opacity').value;
+
+            // UI Labels
+            document.getElementById('val-hue').textContent = `${hue}°`;
+            document.getElementById('val-saturate').textContent = `${saturate}%`;
+            document.getElementById('val-brightness').textContent = `${brightness}%`;
+            document.getElementById('val-contrast').textContent = `${contrast}%`;
+            document.getElementById('val-tint-opacity').textContent = `${tintOpacity}%`;
+
+            // Clear
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Set Canvas Filter
+            ctx.filter = `hue-rotate(${hue}deg) saturate(${saturate}%) brightness(${brightness}%) contrast(${contrast}%) sepia(${sepia}%) invert(${invert}%)`;
+            ctx.drawImage(state.activeImage, 0, 0, canvas.width, canvas.height);
+
+            // Apply Tint Mask
+            if (parseInt(tintOpacity) > 0) {
+                ctx.filter = 'none';
+                ctx.globalAlpha = parseInt(tintOpacity) / 100;
+                ctx.fillStyle = tintColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        function resetImageFilters() {
+            document.getElementById('filter-hue').value = 0;
+            document.getElementById('filter-saturate').value = 100;
+            document.getElementById('filter-brightness').value = 100;
+            document.getElementById('filter-contrast').value = 100;
+            document.getElementById('filter-sepia').value = 0;
+            document.getElementById('filter-invert').value = 0;
+            document.getElementById('filter-tint-opacity').value = 0;
+            applyImageFilters();
+        }
+
+        function copyCurrentPixelColor() {
+            copyToClipboard(state.pixelColor);
+        }
+
+        /* --- TAB 2: GENERATIVE CANVAS MESH --- */
+        function initGenerativeCanvas() {
+            const canvas = document.getElementById('generative-canvas');
+            const count = parseInt(document.getElementById('gen-count').value);
+            resizeGenerativeCanvas();
+
+            state.generative.nodes = [];
+            const colors = [
+                document.getElementById('gen-c1').value,
+                document.getElementById('gen-c2').value,
+                document.getElementById('gen-c3').value,
+                document.getElementById('gen-c4').value
+            ];
+
+            for (let i = 0; i < count; i++) {
+                state.generative.nodes.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    radius: Math.random() * 120 + 80,
+                    color: colors[i % colors.length]
+                });
+            }
+
+            if (!state.generative.animId) {
+                animateGenerative();
+            }
+        }
+
+        function resizeGenerativeCanvas() {
+            const canvas = document.getElementById('generative-canvas');
+            if (!canvas) return;
+            const parent = canvas.parentElement;
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+        }
+
+        function animateGenerative() {
+            const canvas = document.getElementById('generative-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const speed = parseFloat(document.getElementById('gen-speed').value);
+            const blurVal = document.getElementById('gen-blur').value;
+
+            document.getElementById('val-gen-speed').textContent = `${speed.toFixed(1)}x`;
+            document.getElementById('val-gen-blur').textContent = `${blurVal}px`;
+            document.getElementById('val-gen-count').textContent = state.generative.nodes.length;
+
+            ctx.fillStyle = '#090d16';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.filter = `blur(${blurVal}px)`;
+
+            state.generative.nodes.forEach(node => {
+                node.x += node.vx * speed;
+                node.y += node.vy * speed;
+
+                if (node.x < -100 || node.x > canvas.width + 100) node.vx *= -1;
+                if (node.y < -100 || node.y > canvas.height + 100) node.vy *= -1;
+
+                const grad = ctx.createRadialGradient(node.x, node.y, 10, node.x, node.y, node.radius);
+                grad.addColorStop(0, node.color);
+                grad.addColorStop(1, 'transparent');
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            ctx.restore();
+            state.generative.animId = requestAnimationFrame(animateGenerative);
+        }
+
+        function setGenerativeTheme(theme) {
+            const themes = {
+                cyberpunk: ['#ff007f', '#7928ca', '#00dfd8', '#ff0033'],
+                aurora: ['#10b981', '#06b6d4', '#6366f1', '#3b82f6'],
+                sunset: ['#f97316', '#ef4444', '#ec4899', '#8b5cf6'],
+                ocean: ['#0284c7', '#2563eb', '#14b8a6', '#0f172a']
+            };
+
+            const selected = themes[theme] || themes.cyberpunk;
+            document.getElementById('gen-c1').value = selected[0];
+            document.getElementById('gen-c2').value = selected[1];
+            document.getElementById('gen-c3').value = selected[2];
+            document.getElementById('gen-c4').value = selected[3];
+            initGenerativeCanvas();
+        }
+
+        function randomizeGenerativeColors() {
+            const randomHex = () => '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            document.getElementById('gen-c1').value = randomHex();
+            document.getElementById('gen-c2').value = randomHex();
+            document.getElementById('gen-c3').value = randomHex();
+            document.getElementById('gen-c4').value = randomHex();
+            initGenerativeCanvas();
+        }
+
+        /* --- TAB 3: DYNAMIC PAINT CANVAS --- */
+        function initPaintCanvas() {
+            const canvas = document.getElementById('paint-canvas');
+            resizePaintCanvas();
+            fillPaintBackground();
+
+            const startDraw = (e) => {
+                state.paint.isDrawing = true;
+                const pos = getCanvasPos(canvas, e);
+                state.paint.lastX = pos.x;
+                state.paint.lastY = pos.y;
+            };
+
+            const draw = (e) => {
+                if (!state.paint.isDrawing) return;
+                const ctx = canvas.getContext('2d');
+                const pos = getCanvasPos(canvas, e);
+                const size = document.getElementById('brush-size').value;
+
+                ctx.lineWidth = size;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                if (state.paint.mode === 'eraser') {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.strokeStyle = 'rgba(0,0,0,1)';
+                } else if (state.paint.mode === 'rainbow') {
+                    ctx.globalCompositeOperation = 'source-over';
+                    state.paint.rainbowHue = (state.paint.rainbowHue + 2) % 360;
+                    ctx.strokeStyle = `hsl(${state.paint.rainbowHue}, 100%, 50%)`;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = ctx.strokeStyle;
+                } else if (state.paint.mode === 'glow') {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = document.getElementById('paint-color').value;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = ctx.strokeStyle;
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = document.getElementById('paint-color').value;
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(state.paint.lastX, state.paint.lastY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+
+                state.paint.lastX = pos.x;
+                state.paint.lastY = pos.y;
+            };
+
+            const stopDraw = () => {
+                state.paint.isDrawing = false;
+            };
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDraw);
+            canvas.addEventListener('mouseleave', stopDraw);
+
+            // Touch support
+            canvas.addEventListener('touchstart', (e) => { startDraw(e.touches[0]); e.preventDefault(); });
+            canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
+            canvas.addEventListener('touchend', stopDraw);
+        }
+
+        function resizePaintCanvas() {
+            const canvas = document.getElementById('paint-canvas');
+            if (!canvas) return;
+            const parent = canvas.parentElement;
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+        }
+
+        function getCanvasPos(canvas, e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.clientX - rect.left) * (canvas.width / rect.width),
+                y: (e.clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        function setBrushMode(mode) {
+            state.paint.mode = mode;
+            document.querySelectorAll('.brush-mode-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+            const activeBtn = document.getElementById(`btn-brush-${mode}`);
+            activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+            activeBtn.classList.add('bg-indigo-600', 'text-white');
+        }
+
+        function setPaintColor(color) {
+            document.getElementById('paint-color').value = color;
+        }
+
+        function fillPaintBackground() {
+            const canvas = document.getElementById('paint-canvas');
+            const ctx = canvas.getContext('2d');
+            const bg = document.getElementById('paint-bg-color').value;
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function clearPaintCanvas() {
+            fillPaintBackground();
+        }
+
+        /* --- TAB 4: GRADIENT CANVAS & CSS EXPORTER --- */
+        function setGradientType(type) {
+            state.gradient.type = type;
+            document.querySelectorAll('.grad-type-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+            document.getElementById(`btn-grad-${type}`).classList.add('bg-indigo-600', 'text-white');
+            document.getElementById('grad-angle-container').style.display = type === 'linear' ? 'block' : 'none';
+            updateGradient();
+        }
+
+        function updateGradient() {
+            const canvas = document.getElementById('gradient-canvas');
+            if (!canvas) return;
+            const parent = canvas.parentElement;
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+
+            const ctx = canvas.getContext('2d');
+            const angle = document.getElementById('grad-angle').value;
+            const c1 = document.getElementById('grad-color-1').value;
+            const s1 = document.getElementById('grad-stop-1').value;
+            const c2 = document.getElementById('grad-color-2').value;
+            const s2 = document.getElementById('grad-stop-2').value;
+            const c3 = document.getElementById('grad-color-3').value;
+            const s3 = document.getElementById('grad-stop-3').value;
+
+            document.getElementById('val-grad-angle').textContent = `${angle}°`;
+            document.getElementById('val-stop-1').textContent = `${s1}%`;
+            document.getElementById('val-stop-2').textContent = `${s2}%`;
+            document.getElementById('val-stop-3').textContent = `${s3}%`;
+
+            let grad;
+            let cssString = '';
+
+            if (state.gradient.type === 'linear') {
+                const rad = (angle - 90) * (Math.PI / 180);
+                const x1 = canvas.width / 2 + Math.cos(rad) * canvas.width / 2;
+                const y1 = canvas.height / 2 + Math.sin(rad) * canvas.height / 2;
+                const x2 = canvas.width / 2 - Math.cos(rad) * canvas.width / 2;
+                const y2 = canvas.height / 2 - Math.sin(rad) * canvas.height / 2;
+
+                grad = ctx.createLinearGradient(x1, y1, x2, y2);
+                cssString = `background: linear-gradient(${angle}deg, ${c1} ${s1}%, ${c2} ${s2}%, ${c3} ${s3}%);`;
+            } else {
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+                const r = Math.max(canvas.width, canvas.height) / 2;
+
+                grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+                cssString = `background: radial-gradient(circle at center, ${c1} ${s1}%, ${c2} ${s2}%, ${c3} ${s3}%);`;
+            }
+
+            grad.addColorStop(parseInt(s1) / 100, c1);
+            grad.addColorStop(parseInt(s2) / 100, c2);
+            grad.addColorStop(parseInt(s3) / 100, c3);
+
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            document.getElementById('grad-css-output').value = cssString;
+        }
+
+        function randomizeGradient() {
+            const randomHex = () => '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            document.getElementById('grad-color-1').value = randomHex();
+            document.getElementById('grad-color-2').value = randomHex();
+            document.getElementById('grad-color-3').value = randomHex();
+            updateGradient();
+        }
+
+        function copyGradientCSS() {
+            const css = document.getElementById('grad-css-output').value;
+            copyToClipboard(css);
+        }
+
+        /* --- TAB 5: COLOR HARMONY & WCAG CONTRAST --- */
+        function calculateHarmonies() {
+            const hex = document.getElementById('base-harmony-color').value;
+            document.getElementById('base-harmony-hex').value = hex.toUpperCase();
+
+            const hsl = hexToHSL(hex);
+
+            // Analogous (+30deg, -30deg)
+            const analogous = [
+                hslToHex((hsl.h + 330) % 360, hsl.s, hsl.l),
+                hslToHex((hsl.h + 345) % 360, hsl.s, hsl.l),
+                hex,
+                hslToHex((hsl.h + 15) % 360, hsl.s, hsl.l),
+                hslToHex((hsl.h + 30) % 360, hsl.s, hsl.l)
+            ];
+
+            // Complementary & Split
+            const complementary = [
+                hex,
+                hslToHex((hsl.h + 150) % 360, hsl.s, hsl.l),
+                hslToHex((hsl.h + 180) % 360, hsl.s, hsl.l),
+                hslToHex((hsl.h + 210) % 360, hsl.s, hsl.l),
+                hslToHex((hsl.h + 180) % 360, Math.max(0, hsl.s - 30), Math.min(100, hsl.l + 20))
+            ];
+
+            // Triadic (+120deg, +240deg)
+            const triadic = [
+                hex,
+                hslToHex((hsl.h + 120) % 360, hsl.s, hsl.l),
+                hslToHex((hsl.h + 240) % 360, hsl.s, hsl.l),
+                hslToHex((hsl.h + 120) % 360, Math.max(0, hsl.s - 20), hsl.l),
+                hslToHex((hsl.h + 240) % 360, Math.max(0, hsl.s - 20), hsl.l)
+            ];
+
+            renderPaletteGrid('palette-analogous', analogous);
+            renderPaletteGrid('palette-complementary', complementary);
+            renderPaletteGrid('palette-triadic', triadic);
+
+            // Calculate WCAG Ratios
+            const lumBase = getLuminance(hex);
+            const ratioWhite = (1.05 / (lumBase + 0.05));
+            const ratioDark = ((lumBase + 0.05) / (0.01 + 0.05)); // dark bg #090d16
+
+            const whiteFormatted = (lumBase > 0.5 ? 1 / ratioWhite : ratioWhite).toFixed(1);
+            const darkFormatted = (lumBase > 0.5 ? ratioDark : 1 / ratioDark).toFixed(1);
+
+            document.getElementById('wcag-white-ratio').textContent = `${whiteFormatted}:1`;
+            document.getElementById('wcag-dark-ratio').textContent = `${darkFormatted}:1`;
+
+            const previewBox = document.getElementById('wcag-preview-box');
+            previewBox.style.backgroundColor = hex;
+            previewBox.style.color = lumBase > 0.4 ? '#090d16' : '#ffffff';
+        }
+
+        function updateBaseColorFromHex(hex) {
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                document.getElementById('base-harmony-color').value = hex;
+                calculateHarmonies();
+            }
+        }
+
+        function renderPaletteGrid(containerId, colors) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = colors.map(c => `
+                <div onclick="copyToClipboard('${c}')" class="group relative cursor-pointer rounded-xl overflow-hidden border border-slate-700/60 transition hover:scale-105 shadow-md">
+                    <div class="h-16 w-full" style="background-color: ${c};"></div>
+                    <div class="p-2 bg-slate-900 text-center font-mono text-[11px] font-bold text-slate-200 flex items-center justify-between">
+                        <span>${c}</span>
+                        <i class="fa-regular fa-copy opacity-0 group-hover:opacity-100 text-indigo-400 transition"></i>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /* --- COLOR CONVERSION MATH HELPERS --- */
+        function hexToHSL(hex) {
+            let r = parseInt(hex.substring(1,3), 16) / 255;
+            let g = parseInt(hex.substring(3,5), 16) / 255;
+            let b = parseInt(hex.substring(5,7), 16) / 255;
+
+            let max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0;
+            } else {
+                let d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+        }
+
+        function hslToHex(h, s, l) {
+            s /= 100; l /= 100;
+            let c = (1 - Math.abs(2 * l - 1)) * s;
+            let x = c * (1 - Math.abs((h / 60) % 2 - 1));
+            let m = l - c / 2;
+            let r = 0, g = 0, b = 0;
+
+            if (0 <= h && h < 60) { r = c; g = x; b = 0; }
+            else if (60 <= h && h < 120) { r = x; g = c; b = 0; }
+            else if (120 <= h && h < 180) { r = 0; g = c; b = x; }
+            else if (180 <= h && h < 240) { r = 0; g = x; b = c; }
+            else if (240 <= h && h < 300) { r = x; g = 0; b = c; }
+            else if (300 <= h && h < 360) { r = c; g = 0; b = x; }
+
+            r = Math.round((r + m) * 255).toString(16).padStart(2, '0');
+            g = Math.round((g + m) * 255).toString(16).padStart(2, '0');
+            b = Math.round((b + m) * 255).toString(16).padStart(2, '0');
+
+            return `#${r}${g}${b}`.toUpperCase();
+        }
+
+        function getLuminance(hex) {
+            let rgb = [
+                parseInt(hex.substring(1,3), 16) / 255,
+                parseInt(hex.substring(3,5), 16) / 255,
+                parseInt(hex.substring(5,7), 16) / 255
+            ].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+
+            return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+        }
+
+        /* General Download Canvas Utility */
+        function downloadCanvas(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast(`Downloaded ${filename}!`, 'fa-circle-arrow-down');
+        }
+
+        /* Responsive Resizing */
+        function handleResize() {
+            if (state.activeTab === 'paint-studio') resizePaintCanvas();
+            if (state.activeTab === 'generative-studio') resizeGenerativeCanvas();
+            if (state.activeTab === 'gradient-studio') updateGradient();
+        }
+    </script>
+</body>
+</html>
